@@ -15,11 +15,10 @@ class m180916_130934_create_workers_table extends Migration
         $this->createTable('workers', [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull()->unique(),
-            'photo' => $this->string(),
-            'char_1' => $this->integer()->notNull()->defaultValue(0),
-            'char_2' => $this->integer()->notNull()->defaultValue(0),
-            'char_3' => $this->integer()->notNull()->defaultValue(0),
-            'char_4' => $this->integer()->notNull()->defaultValue(0),
+            'char_1' => $this->integer()->notNull(),
+            'char_2' => $this->integer()->notNull(),
+            'char_3' => $this->integer()->notNull(),
+            'char_4' => $this->integer()->notNull(),
             'number_of_projects' => $this->integer()->notNull()->defaultValue(0),
 
         ]);
