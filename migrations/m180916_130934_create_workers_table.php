@@ -19,7 +19,7 @@ class m180916_130934_create_workers_table extends Migration
             'char_2' => $this->integer()->notNull(),
             'char_3' => $this->integer()->notNull(),
             'char_4' => $this->integer()->notNull(),
-            'number_of_projects' => $this->integer()->notNull()->defaultValue(0),
+
 
         ]);
     }
