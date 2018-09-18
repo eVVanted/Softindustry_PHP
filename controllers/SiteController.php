@@ -2,13 +2,18 @@
 
 namespace app\controllers;
 
+use app\models\Projects;
+use app\models\Worker;
+use app\models\WorkerSearch;
 use Yii;
 use yii\filters\AccessControl;
+use yii\helpers\VarDumper;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use yii\web\UploadedFile;
 
 class SiteController extends Controller
 {
@@ -61,68 +66,62 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+
+        $workers = Worker::find()->all();
+        return $this->render('index', compact('workers'));
     }
 
-    /**
-     * Login action.
-     *
-     * @return Response|string
-     */
-    public function actionLogin()
+    public function actionSearch()
     {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+        if (Yii::$app->request->isAjax) {
+
+            $data = Yii::$app->request->post();
+
+            $name = $data['name'];
+
+
+//        VarDumper::dump($name);
+            $workers = Worker::find()->where(['like', 'name', $name])->all();
+//            return json_encode($workers, JSON_UNESCAPED_UNICODE);
+            $this->layout = 'alter';
+            return $this->render('table', compact('workers'));
+        }
+    }
+
+    public function actionCreate()
+    {
+        $model = new Worker();
+
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            $model->image = UploadedFile::getInstance($model, 'image');
+            if($model->image){
+                $model->upload();
+            }
+            unset($model->image);
+            return $this->redirect(['view', 'id' => $model->id]);
         }
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
-
-        $model->password = '';
-        return $this->render('login', [
+        return $this->render('create', [
             'model' => $model,
+            'projects' => Projects::find()->orderBy('id')->all()
         ]);
     }
 
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
+    public function actionView($id)
     {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
-    }
-
-    /**
-     * Displays contact page.
-     *
-     * @return Response|string
-     */
-    public function actionContact()
-    {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
-            Yii::$app->session->setFlash('contactFormSubmitted');
-
-            return $this->refresh();
-        }
-        return $this->render('contact', [
-            'model' => $model,
+        return $this->render('view', [
+            'model' => $this->findModel($id),
         ]);
     }
 
-    /**
-     * Displays about page.
-     *
-     * @return string
-     */
-    public function actionAbout()
+    protected function findModel($id)
     {
-        return $this->render('about');
+        if (($model = Worker::findOne($id)) !== null) {
+            return $model;
+        }
+
+        throw new NotFoundHttpException('The requested page does not exist.');
     }
+
+
 }
